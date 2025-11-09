@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>booksuggestion</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+  <style>
+    #bookOfTheDay {
+      margin-top: 20px;
+      padding: 15px;
+      border: 2px dashed #f4b400;
+      border-radius: 10px;
+      background-color: #fffef7;
+    }
+    #bookOfTheDay h3 {
+      margin-bottom: 5px;
+    }
+    .back-button {
+      margin-top: 20px;
+      background-color: #f4b400;
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 8px;
+      font-family: 'Poppins', sans-serif;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+  <header class="main-header">
+    <h1>IM KINDERGARTEN LIBRARY</h1>
+    <div class="navbar-links">
+      <a href="homepage.html">Home</a>
+      <a href="index.html">Search Books</a>
+      <a href="readinglist.html">My Reading List</a>
+    </div>
+  </header>
+
+  <div class="content">
+    <h2>📘 Book of the Day by Genre</h2>
+    <p>Select a genre to get a random book suggestion!</p>
+    <select id="genreSelect">
+      <option value="animals">Animals</option>
+      <option value="fantasy">Fantasy</option>
+      <option value="science">Science</option>
+      <option value="folklore">Folklore</option>
+      <option value="picture_books">Picture Books</option>
+    </select>
+    <button onclick="getBookOfTheDay()">Get Book</button>
+
+    <div id="bookOfTheDay"></div>
+    <button class="back-button" onclick="window.location.href='homepage.html'">Back to Home</button>
+  </div>
+
+  <script>
+    async function getBookOfTheDay() {
+      const genre = document.getElementById('genreSelect').value;
+      const response = await fetch(`https://openlibrary.org/subjects/${genre}.json?limit=50`);
+      const data = await response.json();
+      const book = data.works[Math.floor(Math.random() * data.works.length)];
+
+      const container = document.getElementById('bookOfTheDay');
+      container.innerHTML = `
+        <h3>${book.title}</h3>
+        <p><strong>Author:</strong> ${book.authors?.[0]?.name || 'Unknown'}</p>
+        <button onclick="addToReadingList('${book.authors?.[0]?.name || 'Unknown'}', '${book.title}')">Add to Reading List</button>
+      `;
+    }
+
+    function addToReadingList(author, title) {
+      const book = {
+        title: title,
+        author: author,
+        status: 'Not Read',
+        mood: '',
+        summary: ''
+      };
+      const list = JSON.parse(localStorage.getItem('readingList') || '[]');
+      list.push(book);
+      localStorage.setItem('readingList', JSON.stringify(list));
+      alert('Book added to reading list!');
+    }
+  </script>
+</body>
+</html>

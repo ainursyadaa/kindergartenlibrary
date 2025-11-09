@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>searchbooks</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+  <style>
+    .search-section {
+      margin: 20px;
+      text-align: center;
+    }
+    .book-card {
+      background-color: #fffef7;
+      border: 2px solid #f4b400;
+      border-radius: 10px;
+      padding: 15px;
+      margin: 10px auto;
+      width: 80%;
+      font-family: 'Poppins', sans-serif;
+    }
+    .book-card h3 {
+      margin-bottom: 5px;
+    }
+  </style>
+</head>
+<body>
+  <header class="main-header">
+    <h1>IM KINDERGARTEN LIBRARY</h1>
+    <div class="navbar-links">
+      <a href="homepage.html">Home</a>
+      <a href="index.html" class="active">Search Books</a>
+      <a href="readinglist.html">My Reading List</a>
+    </div>
+  </header>
+
+  <div class="content">
+    <div class="search-section">
+      <h2>🔍 Search Books by Author</h2>
+      <input type="text" id="authorInput" placeholder="Enter author's name">
+      <button onclick="searchBooksByAuthor()">Search</button>
+    </div>
+
+    <div id="results"></div>
+  </div>
+
+  <script>
+    async function searchBooksByAuthor() {
+      const authorName = document.getElementById('authorInput').value.trim();
+      if (!authorName) {
+        alert('Please enter an author name!');
+        return;
+      }
+
+      const response = await fetch(`https://openlibrary.org/search.json?author=${authorName}`);
+      const data = await response.json();
+      const resultsContainer = document.getElementById('results');
+      resultsContainer.innerHTML = '';
+
+      if (data.docs.length === 0) {
+        resultsContainer.innerHTML = '<p>No books found for this author.</p>';
+        return;
+      }
+
+      data.docs.slice(0, 10).forEach(book => {
+        const title = book.title || 'Unknown';
+        const author = book.author_name?.[0] || 'Unknown';
+        const edition = book.edition_count || 'N/A';
+        const year = book.first_publish_year || 'N/A';
+        const ebook = book.ebook_count_i > 0 ? '✅ Available' : '❌ Not Available';
+
+        const bookCard = document.createElement('div');
+        bookCard.className = 'book-card';
+        bookCard.innerHTML = `
+          <h3>${title}</h3>
+          <p><strong>Author:</strong> ${author}</p>
+          <p><strong>Edition:</strong> ${edition}</p>
+          <p><strong>Published Year:</strong> ${year}</p>
+          <p><strong>E-book:</strong> ${ebook}</p>
+          <button onclick="addToReadingList('${author}', '${title}')">Add to Reading List</button>
+        `;
+        resultsContainer.appendChild(bookCard);
+      });
+    }
+
+    function addToReadingList(author, title) {
+      const book = {
+        title: title,
+        author: author,
+        status: 'Not Read',
+        mood: '',
+        summary: ''
+      };
+      const list = JSON.parse(localStorage.getItem('readingList') || '[]');
+      list.push(book);
+      localStorage.setItem('readingList', JSON.stringify(list));
+      alert('📚 Book added to your reading list!');
+    }
+  </script>
+</body>
+</html>
